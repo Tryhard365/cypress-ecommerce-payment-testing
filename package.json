@@ -1,0 +1,23 @@
+{
+  "name": "cypress-ecommerce-payment-testing",
+  "version": "1.0.0",
+  "description": "Automated testing for e-commerce checkout and payment flows using Cypress",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tryhard365/cypress-ecommerce-payment-testing.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tryhard365/cypress-ecommerce-payment-testing/issues"
+  },
+  "homepage": "https://github.com/tryhard365/cypress-ecommerce-payment-testing#readme",
+  "devDependencies": {
+    "cypress": "^15.7.0"
+  }
+}
