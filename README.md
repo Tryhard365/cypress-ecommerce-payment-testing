@@ -76,7 +76,7 @@ text
 ✅ Payment cancellation  
 ✅ Order confirmation display
 
-**Total: 21 automated test cases covering 95% of critical user paths**
+**Total: 30 automated test cases covering 95% of critical user paths**
 
 ## 🚀 Getting Started
 
