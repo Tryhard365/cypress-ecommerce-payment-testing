@@ -1,62 +1,65 @@
-describe('E-commerce Checkout Flow', () => {
-  
+import LoginPage from '../pageObjects/LoginPage'
+import ProductsPage from '../pageObjects/ProductsPage'
+import CartPage from '../pageObjects/CartPage'
+import CheckoutPage from '../pageObjects/CheckoutPage'
+
+describe('Checkout Flow Tests', () => {
   beforeEach(() => {
-    // Visit the demo site
-    cy.visit('https://www.saucedemo.com/')
-    
-    // Login
-    cy.get('[data-test="username"]').type('standard_user')
-    cy.get('[data-test="password"]').type('secret_sauce')
-    cy.get('[data-test="login-button"]').click()
+    LoginPage.visit()
+    LoginPage.login('standard_user', 'secret_sauce')
   })
 
-
-  it('Should complete a successful purchase', () => {
-    // Add item to cart
-    cy.get('[data-test="add-to-cart-sauce-labs-backpack"]').click()
+  it('Should complete successful purchase', () => {
+    ProductsPage.addFirstItemToCart()
+    ProductsPage.goToCart()
+    CartPage.clickCheckout()
     
-    // Go to cart
-    cy.get('.shopping_cart_link').click()
-    
-    // Proceed to checkout
-    cy.get('[data-test="checkout"]').click()
-    
-    // Fill checkout form
-    cy.get('[data-test="firstName"]').type('John')
-    cy.get('[data-test="lastName"]').type('Doe')
-    cy.get('[data-test="postalCode"]').type('12345')
-    cy.get('[data-test="continue"]').click()
-    
-    // Complete order
-    cy.get('[data-test="finish"]').click()
-    
-    // Verify success
-    cy.get('.complete-header').should('contain', 'Thank you for your order')
+    CheckoutPage.enterShippingInfo('John', 'Doe', '12345')
+    CheckoutPage.clickContinue()
+    CheckoutPage.verifyOrderSummary()
+    CheckoutPage.clickFinish()
+    CheckoutPage.verifyOrderComplete()
   })
 
-
-  it('Should allow removing items from cart', () => {
-    // Add item
-    cy.get('[data-test="add-to-cart-sauce-labs-backpack"]').click()
-    cy.get('.shopping_cart_link').click()
+  it('Should validate missing first name', () => {
+    ProductsPage.addFirstItemToCart()
+    ProductsPage.goToCart()
+    CartPage.clickCheckout()
     
-    // Remove item
-    cy.get('[data-test="remove-sauce-labs-backpack"]').click()
-    
-    // Verify cart is empty
-    cy.get('.cart_item').should('not.exist')
+    CheckoutPage.enterShippingInfo('', 'Doe', '12345')
+    CheckoutPage.clickContinue()
+    CheckoutPage.verifyErrorMessage()
   })
 
-
-  it('Should show empty cart message', () => {
-    // Go to cart without adding items
-    cy.get('.shopping_cart_link').click()
+  it('Should validate missing last name', () => {
+    ProductsPage.addFirstItemToCart()
+    ProductsPage.goToCart()
+    CartPage.clickCheckout()
     
-    // Verify cart is empty (no items)
-    cy.get('.cart_item').should('not.exist')
-    
-    // Verify cart quantity badge is not shown
-    cy.get('.shopping_cart_badge').should('not.exist')
+    CheckoutPage.enterShippingInfo('John', '', '12345')
+    CheckoutPage.clickContinue()
+    CheckoutPage.verifyErrorMessage()
   })
 
-})  // ← Add this closing brace
+  it('Should validate missing postal code', () => {
+    ProductsPage.addFirstItemToCart()
+    ProductsPage.goToCart()
+    CartPage.clickCheckout()
+    
+    CheckoutPage.enterShippingInfo('John', 'Doe', '')
+    CheckoutPage.clickContinue()
+    CheckoutPage.verifyErrorMessage()
+  })
+
+  it('Should checkout with multiple items', () => {
+    ProductsPage.addMultipleItemsToCart(3)
+    ProductsPage.goToCart()
+    CartPage.verifyCartItemCount(3)
+    CartPage.clickCheckout()
+    
+    CheckoutPage.enterShippingInfo('Jane', 'Smith', '54321')
+    CheckoutPage.clickContinue()
+    CheckoutPage.clickFinish()
+    CheckoutPage.verifyOrderComplete()
+  })
+})

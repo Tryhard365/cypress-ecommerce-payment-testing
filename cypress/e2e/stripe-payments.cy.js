@@ -1,86 +1,69 @@
+import LoginPage from '../pageObjects/LoginPage'
+import ProductsPage from '../pageObjects/ProductsPage'
+import CartPage from '../pageObjects/CartPage'
+import CheckoutPage from '../pageObjects/CheckoutPage'
+
 describe('Payment Flow Testing', () => {
-  
-  // Using Sauce Demo's checkout as payment flow testing
-  // We'll simulate payment scenarios with form validation
-  
+
   beforeEach(() => {
-    cy.visit('https://www.saucedemo.com/')
-    cy.get('[data-test="username"]').type('standard_user')
-    cy.get('[data-test="password"]').type('secret_sauce')
-    cy.get('[data-test="login-button"]').click()
-    
-    // Add item and proceed to checkout
-    cy.get('[data-test="add-to-cart-sauce-labs-backpack"]').click()
-    cy.get('.shopping_cart_link').click()
-    cy.get('[data-test="checkout"]').click()
+    // Login and navigate to checkout using POM
+    LoginPage.visit()
+    LoginPage.login('standard_user', 'secret_sauce')
+
+    ProductsPage.addSpecificItemToCart('sauce-labs-backpack')
+    ProductsPage.goToCart()
+
+    CartPage.clickCheckout()
   })
 
   it('Should complete checkout with valid payment info', () => {
-    // Fill all required fields (simulating payment form)
-    cy.get('[data-test="firstName"]').type('John')
-    cy.get('[data-test="lastName"]').type('Doe')
-    cy.get('[data-test="postalCode"]').type('12345')
-    cy.get('[data-test="continue"]').click()
-    
+    CheckoutPage.enterShippingInfo('John', 'Doe', '12345')
+    CheckoutPage.clickContinue()
+
     // Verify payment overview shows correct total
-    cy.get('.summary_total_label').should('be.visible')
-    
+    CheckoutPage.verifyOrderSummary()
+
     // Complete payment
-    cy.get('[data-test="finish"]').click()
-    
+    CheckoutPage.clickFinish()
+
     // Verify success
-    cy.get('.complete-header').should('contain', 'Thank you')
+    CheckoutPage.verifyOrderComplete()
   })
 
   it('Should validate required payment fields', () => {
     // Leave first name empty
-    cy.get('[data-test="lastName"]').type('Doe')
-    cy.get('[data-test="postalCode"]').type('12345')
-    cy.get('[data-test="continue"]').click()
-    
+    CheckoutPage.enterShippingInfo('', 'Doe', '12345')
+    CheckoutPage.clickContinue()
+
     // Verify error for missing first name
-    cy.get('[data-test="error"]').should('contain', 'First Name is required')
+    CheckoutPage.verifyErrorMessage()
   })
 
   it('Should validate postal code field', () => {
     // Fill name but leave postal code empty
-    cy.get('[data-test="firstName"]').type('John')
-    cy.get('[data-test="lastName"]').type('Doe')
-    cy.get('[data-test="continue"]').click()
-    
+    CheckoutPage.enterShippingInfo('John', 'Doe', '')
+    CheckoutPage.clickContinue()
+
     // Verify error for missing postal code
-    cy.get('[data-test="error"]').should('contain', 'Postal Code is required')
+    CheckoutPage.verifyErrorMessage()
   })
 
   it('Should allow reviewing order before payment', () => {
-    // Complete checkout form
-    cy.get('[data-test="firstName"]').type('John')
-    cy.get('[data-test="lastName"]').type('Doe')
-    cy.get('[data-test="postalCode"]').type('12345')
-    cy.get('[data-test="continue"]').click()
-    
+    CheckoutPage.enterShippingInfo('John', 'Doe', '12345')
+    CheckoutPage.clickContinue()
+
     // Verify on overview page
-    cy.url().should('include', 'checkout-step-two')
-    
-    // Verify item details visible
-    cy.get('.cart_item').should('be.visible')
-    cy.get('.summary_subtotal_label').should('be.visible')
-    cy.get('.summary_tax_label').should('be.visible')
-    cy.get('.summary_total_label').should('be.visible')
+    CheckoutPage.verifyOrderSummary()
   })
 
   it('Should handle payment cancellation', () => {
-    // Fill form and go to overview
-    cy.get('[data-test="firstName"]').type('John')
-    cy.get('[data-test="lastName"]').type('Doe')
-    cy.get('[data-test="postalCode"]').type('12345')
-    cy.get('[data-test="continue"]').click()
-    
-    // Cancel payment
-    cy.get('[data-test="cancel"]').click()
-    
-    // Verify back to inventory
-    cy.url().should('include', '/inventory.html')
-  })
+    CheckoutPage.enterShippingInfo('John', 'Doe', '12345')
+    CheckoutPage.clickContinue()
 
+    // Cancel payment
+    CheckoutPage.clickCancel()
+
+    // Verify back to inventory
+    ProductsPage.verifyPageLoaded()
+  })
 })
